@@ -1,63 +1,34 @@
-
-const GROQ_API_URL =
-  "https://api.groq.com/openai/v1/chat/completions";
+const GROQ_API_KEY = "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";
 
 export async function generateScript(env, input) {
-  if (!env.GROQ_API_KEY) {
-    throw new Error("GROQ_API_KEY_MISSING");
-  }
+  const apiKey = env.GROQ_API_KEY || GROQ_API_KEY;
 
-  const topic = String(input.topic || "").trim();
-
-  if (!topic) {
-    throw new Error("TOPIC_REQUIRED");
-  }
-
-  const response = await fetch(GROQ_API_URL, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${env.GROQ_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "llama-3.3-70b-versatile",
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are a professional Myanmar AI video script writer. Generate original, engaging scripts in the requested language. For videos, include scenes, timestamps, visual descriptions, dialogue, narration and sound effects when appropriate.",
-        },
-        {
-          role: "user",
-          content: [
-            `Topic: ${topic}`,
-            `Content type: ${input.contentType || "AI Video"}`,
-            `Duration: ${input.duration || "60 seconds"}`,
-            `Language: ${input.language || "Myanmar"}`,
-            `Visual style: ${input.style || "Cinematic"}`,
-            "Create a complete, clearly structured script.",
-          ].join("\n"),
-        },
-      ],
-      temperature: 0.7,
-      max_tokens: 5000,
-    }),
-  });
+  const response = await fetch(
+    "https://api.groq.com/openai/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          {
+            role: "user",
+            content: `မြန်မာဘာသာဖြင့် AI video ဇာတ်ညွှန်းရေးပေးပါ။ ခေါင်းစဉ်: ${input.topic}`
+          }
+        ],
+        max_tokens: 4000
+      })
+    }
+  );
 
   const data = await response.json();
 
   if (!response.ok) {
-    console.error("Groq API error:", data);
-    throw new Error(
-      data?.error?.message || "GROQ_REQUEST_FAILED"
-    );
+    throw new Error(data.error?.message || "Groq API error");
   }
 
-  const script = data?.choices?.[0]?.message?.content;
-
-  if (!script) {
-    throw new Error("EMPTY_AI_RESPONSE");
-  }
-
-  return script.trim();
+  return data.choices[0].message.content;
 }
