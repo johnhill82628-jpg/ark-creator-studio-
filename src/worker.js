@@ -1,67 +1,79 @@
+
 import { generateScript } from "./groq.js";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type"
+};
+
+function json(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      ...corsHeaders,
+      "Content-Type": "application/json; charset=utf-8"
+    }
+  });
+}
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    const path = url.pathname;
 
-    // API HEALTH CHECK
-    if (
-      url.pathname === "/api/health" &&
-      request.method === "GET"
-    ) {
-      return Response.json({
-        ok: true,
-        app: "ARK CREATOR STUDIO",
-        message: "Worker is running"
+    if (request.method === "OPTIONS") {
+      return new Response(null, {
+        status: 204,
+        headers: corsHeaders
       });
     }
 
-    // AI SCRIPT GENERATOR
-    if (
-      url.pathname === "/api/generate" &&
-      request.method === "POST"
-    ) {
+    // API connection test
+    if (path === "/api/health" && request.method === "GET") {
+      return json({
+        ok: true,
+        app: "ARK CREATOR STUDIO",
+        message: "API connected"
+      });
+    }
+
+    // Generate AI script
+    if (path === "/api/generate" && request.method === "POST") {
       try {
         const body = await request.json();
 
-        if (!body.topic || !String(body.topic).trim()) {
-          return Response.json(
-            {
-              ok: false,
-              error: "ဇာတ်လမ်းခေါင်းစဉ် ထည့်ပေးပါ။"
-            },
-            { status: 400 }
-          );
+        if (!String(body.topic || "").trim()) {
+          return json({
+            ok: false,
+            error: "ဇာတ်လမ်းခေါင်းစဉ် ထည့်ပေးပါ။"
+          }, 400);
         }
 
-        const script = await generateScript(env, body);
+        const script = await generateScript(body);
 
-        return Response.json({
+        return json({
           ok: true,
-          script: script
+          script
         });
       } catch (error) {
-        return Response.json(
-          {
-            ok: false,
-            error: error.message || "Groq API error"
-          },
-          { status: 500 }
-        );
+        console.error("Generation failed:", error);
+
+        return json({
+          ok: false,
+          error: error.message || "AI Script ထုတ်မရပါ။"
+        }, 502);
       }
     }
 
-    // WEBSITE FILES
+    // Serve website files
     if (env.ASSETS) {
       return env.ASSETS.fetch(request);
     }
 
-    return Response.json(
-      {
-        ok: false,
-        error: "Route not found"
-      },
-      { status: 404 }
-    );
+    return json({
+      ok: false,
+      error: "Website assets binding မတွေ့ပါ။"
+    }, 404);
   }
 };
