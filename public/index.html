@@ -1,24 +1,853 @@
+
 <!DOCTYPE html>
 <html lang="my">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ARK CREATOR STUDIO</title>
-  <style>
-    body {
-      background: #090909;
-      color: #fff;
-      font-family: sans-serif;
-      text-align: center;
-      padding: 50px 15px;
-    }
-    h1 { color: #d9b45b; }
-    p { color: #ccc; line-height: 1.8; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#090909">
+<title>ARK CREATOR STUDIO</title>
+
+<style>
+:root {
+  --bg: #090909;
+  --panel: #111111;
+  --panel2: #171717;
+  --gold: #d9b45b;
+  --gold2: #f4d98a;
+  --text: #f5f5f5;
+  --muted: #999999;
+  --border: #292929;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+button, input, textarea, select { font: inherit; }
+button { cursor: pointer; }
+.app { min-height: 100vh; }
+.sidebar {
+  width: 250px;
+  position: fixed;
+  inset: 0 auto 0 0;
+  padding: 24px 16px;
+  background: #0d0d0d;
+  border-right: 1px solid var(--border);
+  z-index: 5;
+  overflow-y: auto;
+}
+.brand {
+  font-size: 19px;
+  font-weight: 900;
+  color: var(--gold);
+  letter-spacing: 1px;
+  padding: 4px 10px 28px;
+}
+.brand small {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 3px;
+  margin-top: 6px;
+}
+.menu-label {
+  color: #777;
+  font-size: 10px;
+  letter-spacing: 2px;
+  padding: 12px 12px 8px;
+}
+.nav {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  padding: 13px 12px;
+  color: #aaa;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  text-align: left;
+  margin-bottom: 5px;
+}
+.nav:hover, .nav.active {
+  color: var(--gold2);
+  background: #211c10;
+  border-color: #44371a;
+}
+.sidebar-bottom {
+  margin-top: 28px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel);
+}
+.sidebar-bottom p {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.main {
+  margin-left: 250px;
+  padding: 25px 30px 50px;
+  max-width: 1600px;
+}
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 28px;
+}
+.mobile-brand { display: none; }
+.eyebrow {
+  color: var(--gold);
+  font-size: 11px;
+  letter-spacing: 2px;
+  font-weight: 700;
+}
+h1 { font-size: clamp(23px, 3vw, 34px); margin: 8px 0; }
+h2 { font-size: 19px; margin: 0 0 8px; }
+h3 { font-size: 15px; margin: 0 0 8px; }
+p { line-height: 1.7; }
+.muted { color: var(--muted); font-size: 13px; }
+.profile {
+  width: 42px;
+  height: 42px;
+  border: 1px solid #705b2b;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--gold2);
+  background: #211c10;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.page { display: none; }
+.page.active { display: block; }
+.hero {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #51401d;
+  border-radius: 18px;
+  padding: 30px;
+  background:
+    radial-gradient(ellipse at 90% 10%, #51401d55, transparent 40%),
+    linear-gradient(120deg, #1b1811, #101010 65%);
+  margin-bottom: 28px;
+}
+.hero h1 { max-width: 600px; line-height: 1.3; }
+.hero p { color: #bdb6a6; max-width: 550px; font-size: 14px; }
+.gold { color: var(--gold2); }
+.btn {
+  border: 1px solid #725a26;
+  border-radius: 9px;
+  padding: 11px 16px;
+  color: #17130a;
+  font-weight: 800;
+  background: linear-gradient(135deg, #f1d586, #bd963e);
+}
+.btn:hover { filter: brightness(1.1); }
+.btn.secondary {
+  background: #181818;
+  color: var(--gold2);
+  border-color: var(--border);
+}
+.btn:disabled { opacity: .5; cursor: wait; }
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 27px 0 15px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 19px;
+  min-width: 0;
+}
+.tool {
+  cursor: pointer;
+  transition: border-color .15s, transform .15s;
+}
+.tool:hover { border-color: #8b7037; transform: translateY(-2px); }
+.tool-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #282112;
+  border: 1px solid #45381c;
+  font-size: 22px;
+  margin-bottom: 15px;
+}
+.tool p { font-size: 12px; color: var(--muted); margin-bottom: 0; }
+.tag {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  color: var(--gold2);
+  border: 1px solid #4a3b1c;
+  background: #211c10;
+}
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 25px;
+}
+.stat-value { font-size: 25px; font-weight: 800; margin-top: 10px; }
+.stat-label { color: var(--muted); font-size: 12px; }
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.field { margin-bottom: 16px; }
+.field label {
+  display: block;
+  color: #d4d4d4;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+.field input, .field textarea, .field select {
+  width: 100%;
+  color: white;
+  background: #0a0a0a;
+  border: 1px solid #333;
+  border-radius: 9px;
+  padding: 12px;
+  outline: none;
+}
+.field input:focus, .field textarea:focus, .field select:focus {
+  border-color: var(--gold);
+}
+.field textarea { min-height: 110px; resize: vertical; }
+.field select { color-scheme: dark; }
+.result {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: #e9e3d5;
+  background: #080808;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  min-height: 100px;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.notice {
+  border-left: 3px solid var(--gold);
+  padding: 12px 14px;
+  background: #211c10;
+  color: #d6c8a5;
+  font-size: 12px;
+  line-height: 1.8;
+  border-radius: 0 8px 8px 0;
+  margin: 14px 0;
+}
+.project-row {
+  padding: 15px 0;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.project-row:last-child { border-bottom: 0; }
+.empty {
+  text-align: center;
+  padding: 35px 12px;
+  color: var(--muted);
+}
+.footer {
+  text-align: center;
+  color: #666;
+  font-size: 11px;
+  margin-top: 45px;
+}
+.mobile-nav { display: none; }
+@media(max-width: 900px) {
+  .sidebar { width: 210px; }
+  .main { margin-left: 210px; padding: 22px 18px 40px; }
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media(max-width: 620px) {
+  .sidebar { display: none; }
+  .main { margin: 0; padding: 17px 14px 95px; }
+  .mobile-brand {
+    display: block;
+    color: var(--gold);
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 1px;
+  }
+  .topbar { margin-bottom: 20px; }
+  .topbar .eyebrow { display: none; }
+  .hero { padding: 22px 18px; }
+  .hero h1 { font-size: 25px; }
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .card { padding: 14px; }
+  .stats { gap: 8px; }
+  .stat-value { font-size: 19px; }
+  .stat-label { font-size: 10px; }
+  .form-grid { grid-template-columns: 1fr; gap: 0; }
+  .mobile-nav {
+    position: fixed;
+    z-index: 10;
+    inset: auto 0 0 0;
+    display: flex;
+    justify-content: space-around;
+    gap: 3px;
+    background: #0d0d0d;
+    border-top: 1px solid var(--border);
+    padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
+  }
+  .mobile-nav button {
+    flex: 1;
+    padding: 8px 2px;
+    color: #999;
+    background: transparent;
+    border: 0;
+    font-size: 10px;
+    border-radius: 8px;
+  }
+  .mobile-nav button.active { color: var(--gold2); background: #211c10; }
+}
+</style>
 </head>
+
 <body>
-  <h1>ARK CREATOR STUDIO</h1>
-  <p>AI Creation Workspace</p>
-  <p>မင်္ဂလာပါ sir။ ကိုယ့် App ကို စတင်တည်ဆောက်နေပါပြီ။</p>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">ARK CREATOR STUDIO
+      <small>AI CREATIVE WORKSPACE</small>
+    </div>
+
+    <div class="menu-label">WORKSPACE</div>
+    <button class="nav active" data-page="home">⌂　Dashboard</button>
+    <button class="nav" data-page="script">✦　AI Script Generator</button>
+    <button class="nav" data-page="voice">◖　AI Voice</button>
+    <button class="nav" data-page="image">▧　AI Image</button>
+
+    <div class="menu-label">YOUR WORK</div>
+    <button class="nav" data-page="projects">▤　My Projects</button>
+    <button class="nav" data-page="settings">⚙　Settings</button>
+
+    <div class="sidebar-bottom">
+      <span class="tag">CREATOR WORKSPACE</span>
+      <h3 style="margin-top:13px">ဖန်တီးမှုတွေ စတင်လိုက်ပါ</h3>
+      <p>ဇာတ်လမ်း၊ Video Prompt နဲ့ AI Content တွေကို တစ်နေရာတည်းမှာ စီမံဖို့။</p>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <div class="mobile-brand">ARK CREATOR STUDIO</div>
+        <div class="eyebrow">YOUR CREATIVE SPACE</div>
+        <h1 id="pageTitle">Dashboard</h1>
+        <div class="muted" id="pageSubtitle">သင့်ရဲ့ AI Content ဖန်တီးမှုကို ဒီကနေ စတင်ပါ။</div>
+      </div>
+      <div class="profile" title="Creator">ARK</div>
+    </header>
+
+    <section class="page active" id="home">
+      <div class="hero">
+        <div class="eyebrow">WELCOME TO YOUR STUDIO</div>
+        <h1>Ideas to Content.<br><span class="gold">Create Without Limits.</span></h1>
+        <p>သင့်ရဲ့ စိတ်ကူးတွေကို ဇာတ်လမ်း၊ Scene Prompt နဲ့ Content Project တွေအဖြစ် ပြောင်းလဲဖို့ ARK CREATOR STUDIO ကို အသုံးပြုပါ။</p>
+        <button class="btn" data-go="script">✦　AI Script စတင်ရေးမယ်</button>
+      </div>
+
+      <div class="stats">
+        <div class="card">
+          <div class="stat-label">MY PROJECTS</div>
+          <div class="stat-value" id="projectCount">0</div>
+          <div class="muted">သိမ်းထားသော Project</div>
+        </div>
+        <div class="card">
+          <div class="stat-label">CREATIVE TOOLS</div>
+          <div class="stat-value">04</div>
+          <div class="muted">ဖန်တီးမှု Tools</div>
+        </div>
+        <div class="card">
+          <div class="stat-label">WORKSPACE</div>
+          <div class="stat-value gold" style="font-size:19px">READY</div>
+          <div class="muted">Dashboard UI</div>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <div>
+          <h2>Creative Tools</h2>
+          <div class="muted">သင်အသုံးပြုလိုတဲ့ Tool ကိုရွေးပါ။</div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="card tool" data-go="script">
+          <div class="tool-icon">✦</div>
+          <h3>AI Script Generator</h3>
+          <span class="tag">SCRIPT</span>
+          <p>ဇာတ်လမ်း၊ Scene နဲ့ Video Prompt များ ရေးသားရန်။</p>
+        </div>
+        <div class="card tool" data-go="voice">
+          <div class="tool-icon">◖</div>
+          <h3>AI Voice Studio</h3>
+          <span class="tag">VOICE</span>
+          <p>စာသားမှ အသံဖိုင် ထုတ်လုပ်ရန်။</p>
+        </div>
+        <div class="card tool" data-go="image">
+          <div class="tool-icon">▧</div>
+          <h3>AI Image Studio</h3>
+          <span class="tag">IMAGE</span>
+          <p>AI ပုံထုတ်လုပ်မှုအတွက် Prompt များ ပြင်ဆင်ရန်။</p>
+        </div>
+        <div class="card tool" data-go="projects">
+          <div class="tool-icon">▤</div>
+          <h3>Project Library</h3>
+          <span class="tag">LIBRARY</span>
+          <p>ဒီ Browser ထဲမှာ သိမ်းထားတဲ့ Project များကို ကြည့်ရန်။</p>
+        </div>
+        <div class="card tool" data-go="settings">
+          <div class="tool-icon">⚙</div>
+          <h3>Studio Settings</h3>
+          <span class="tag">SETTINGS</span>
+          <p>Studio အခြေအနေနဲ့ ချိတ်ဆက်မှုများကို ကြည့်ရန်။</p>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <h2>Recent Projects</h2>
+        <button class="btn secondary" data-go="projects">အားလုံးကြည့်ရန်</button>
+      </div>
+      <div class="card" id="recentProjects">
+        <div class="empty">သင့်ရဲ့ ပထမဆုံး Project ကို စတင်ဖန်တီးလိုက်ပါ။</div>
+      </div>
+    </section>
+
+    <section class="page" id="script">
+      <div class="card">
+        <div class="eyebrow">AI CONTENT CREATION</div>
+        <h2 style="margin-top:10px">AI Script Generator</h2>
+        <p class="muted">Topic ထည့်ပါ။ ဇာတ်လမ်းနဲ့ Scene Prompt ထုတ်လုပ်ဖို့ အချက်အလက်တွေ သတ်မှတ်ပါ။</p>
+
+        <div class="field">
+          <label for="topic">ဇာတ်လမ်း Topic / အကြောင်းအရာ</label>
+          <textarea id="topic" placeholder="ဥပမာ - ပဲခူးမြို့က လူငယ်တစ်ယောက်ရဲ့ အောင်မြင်မှုဇာတ်လမ်း"></textarea>
+        </div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label for="contentType">Content အမျိုးအစား</label>
+            <select id="contentType">
+              <option value="Myanmar 2D cartoon story">Myanmar 2D Cartoon</option>
+              <option value="Cinematic realistic video">Cinematic Realistic</option>
+              <option value="Myanmar horror story">Myanmar Horror</option>
+              <option value="Luxury lifestyle video">Luxury Lifestyle</option>
+              <option value="Educational explainer">Educational</option>
+              <option value="AI technology explainer">AI Technology</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="duration">Video ကြာချိန်</label>
+            <select id="duration">
+              <option value="30 seconds">30 စက္ကန့်</option>
+              <option value="60 seconds" selected>1 မိနစ်</option>
+              <option value="180 seconds">3 မိနစ်</option>
+              <option value="300 seconds">5 မိနစ်</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="language">Output Language</label>
+            <select id="language">
+              <option value="Burmese">မြန်မာဘာသာ</option>
+              <option value="English">English</option>
+              <option value="Burmese dialogue with English video prompts">မြန်မာ Dialogue + English Prompt</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="sceneStyle">Scene ပုံစံ</label>
+            <select id="sceneStyle">
+              <option value="Detailed scene-by-scene">Scene တစ်ခန်းချင်းစီ</option>
+              <option value="Narration-led story">Narration အဓိက</option>
+              <option value="Character dialogue focused">Character Dialogue အဓိက</option>
+              <option value="Video generation prompts">Video Generation Prompt</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="notice">
+          မှတ်ချက် - ဒီ Form က Dashboard UI ရဲ့ အစိတ်အပိုင်းပါ။ AI အဖြေတကယ်ထုတ်ဖို့ Backend နဲ့ Groq API ကို ချိတ်ဆက်ပြီးမှ အလုပ်လုပ်ပါမယ်။
+        </div>
+        <button class="btn" id="generateBtn">✦　Generate Script</button>
+        <div id="generateStatus" class="muted" style="margin-top:14px"></div>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <div class="section-head" style="margin-top:0">
+          <h2>Generated Result</h2>
+          <button class="btn secondary" id="copyResult">Copy</button>
+        </div>
+        <div id="scriptResult" class="result">သင့်ရဲ့ Script ကို ဒီနေရာမှာ ပြသပါမယ်။</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
+          <button class="btn" id="saveProject">Save Project</button>
+          <button class="btn secondary" data-go="projects">Project Library</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="voice">
+      <div class="card">
+        <div class="eyebrow">AUDIO WORKSPACE</div>
+        <h2 style="margin-top:10px">AI Voice Studio</h2>
+        <p class="muted">ဇာတ်ညွှန်းကို အသံဖိုင်အဖြစ် ပြောင်းလဲဖို့ ပြင်ဆင်ရန်။</p>
+        <div class="field">
+          <label>အသံပြောင်းမယ့် စာသား</label>
+          <textarea id="voiceText" placeholder="မြန်မာစာသားကို ဒီမှာ ထည့်ပါ..."></textarea>
+        </div>
+        <div class="field">
+          <label>Voice Style</label>
+          <select id="voiceStyle">
+            <option>Myanmar Male Narrator</option>
+            <option>Deep Horror Narrator</option>
+            <option>Calm Storytelling</option>
+            <option>Energetic Presenter</option>
+          </select>
+        </div>
+        <div class="notice">AI Voice API မချိတ်ဆက်ရသေးပါ။ ဒီစာမျက်နှာက အသံဖိုင်ကို အခုချိန်မှာ မထုတ်ပေးနိုင်သေးပါ။</div>
+        <button class="btn" id="voiceBtn">Voice API အခြေအနေ စစ်ရန်</button>
+        <div class="muted" id="voiceStatus" style="margin-top:12px"></div>
+      </div>
+    </section>
+
+    <section class="page" id="image">
+      <div class="card">
+        <div class="eyebrow">VISUAL WORKSPACE</div>
+        <h2 style="margin-top:10px">AI Image Studio</h2>
+        <p class="muted">AI Image Generator အတွက် Prompt ရေးသားရန်။</p>
+        <div class="field">
+          <label>Image Prompt</label>
+          <textarea id="imagePrompt" placeholder="ဥပမာ - Cinematic Myanmar village at night, realistic lighting..."></textarea>
+        </div>
+        <div class="field">
+          <label>Image Style</label>
+          <select id="imageStyle">
+            <option>Photorealistic Cinematic</option>
+            <option>Myanmar 2D Cartoon</option>
+            <option>3D Animation</option>
+            <option>Dark Gold Luxury</option>
+          </select>
+        </div>
+        <button class="btn" id="copyImagePrompt">Prompt Copy လုပ်ရန်</button>
+        <div class="notice">ဒီနေရာမှာ Prompt ရေးပြီး Copy လုပ်နိုင်ပါတယ်။ တကယ် AI ပုံထုတ်ဖို့ Image Generation Provider ကို ထပ်ချိတ်ဆက်ရပါမယ်။</div>
+      </div>
+    </section>
+
+    <section class="page" id="projects">
+      <div class="card">
+        <div class="eyebrow">YOUR LIBRARY</div>
+        <h2 style="margin-top:10px">My Projects</h2>
+        <p class="muted">ဒီ Browser ထဲမှာ သိမ်းထားတဲ့ Project များ။</p>
+        <div id="allProjects"><div class="empty">Project မရှိသေးပါ။</div></div>
+      </div>
+    </section>
+
+    <section class="page" id="settings">
+      <div class="card">
+        <div class="eyebrow">STUDIO CONFIGURATION</div>
+        <h2 style="margin-top:10px">Settings & Connections</h2>
+        <div class="project-row">
+          <div>
+            <h3>Studio Interface</h3>
+            <div class="muted">Black & Gold Luxury UI</div>
+          </div>
+          <span class="tag">READY</span>
+        </div>
+        <div class="project-row">
+          <div>
+            <h3>Backend API</h3>
+            <div class="muted">Cloudflare Worker API</div>
+          </div>
+          <span class="tag">CHECK REQUIRED</span>
+        </div>
+        <div class="project-row">
+          <div>
+            <h3>Groq AI</h3>
+            <div class="muted">AI Script Generation</div>
+          </div>
+          <span class="tag">NOT CONNECTED</span>
+        </div>
+        <div class="project-row">
+          <div>
+            <h3>AI Voice / Image</h3>
+            <div class="muted">External providers</div>
+          </div>
+          <span class="tag">NOT CONNECTED</span>
+        </div>
+        <div class="notice">API Key၊ Password နဲ့ Secret များကို HTML ထဲမှာ မထည့်ပါနဲ့။ Cloudflare Worker Secrets ထဲမှာသာ ထည့်သွင်းရပါမယ်။</div>
+        <button class="btn secondary" id="healthBtn">Backend စစ်ဆေးရန်</button>
+        <div id="healthStatus" class="muted" style="margin-top:12px"></div>
+      </div>
+    </section>
+
+    <div class="footer">ARK CREATOR STUDIO · CREATED BY ARKAR</div>
+  </main>
+
+  <nav class="mobile-nav">
+    <button class="active" data-page="home">⌂<br>Home</button>
+    <button data-page="script">✦<br>Script</button>
+    <button data-page="voice">◖<br>Voice</button>
+    <button data-page="image">▧<br>Image</button>
+    <button data-page="projects">▤<br>Projects</button>
+  </nav>
+</div>
+
+<script>
+const titles = {
+  home: ["Dashboard", "သင့်ရဲ့ AI Content ဖန်တီးမှုကို ဒီကနေ စတင်ပါ။"],
+  script: ["AI Script Generator", "သင့်စိတ်ကူးကို ဇာတ်ညွှန်းအဖြစ် ပြောင်းလဲပါ။"],
+  voice: ["AI Voice Studio", "စာသားမှ အသံဖိုင်ထုတ်လုပ်ရန်။"],
+  image: ["AI Image Studio", "AI Image Prompt များကို ပြင်ဆင်ရန်။"],
+  projects: ["My Projects", "သင့်ရဲ့ သိမ်းဆည်းထားသော Project များ။"],
+  settings: ["Settings", "Studio နှင့် API ချိတ်ဆက်မှုအခြေအနေ။"]
+};
+
+let currentResult = "";
+let currentProjectName = "";
+
+function getProjects() {
+  try {
+    return JSON.parse(localStorage.getItem("ark_creator_projects") || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function openPage(name) {
+  if (!titles[name]) return;
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById(name).classList.add("active");
+
+  document.querySelectorAll("[data-page]").forEach(b => {
+    b.classList.toggle("active", b.dataset.page === name);
+  });
+
+  document.getElementById("pageTitle").textContent = titles[name][0];
+  document.getElementById("pageSubtitle").textContent = titles[name][1];
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  if (name === "projects" || name === "home") renderProjects();
+}
+
+document.querySelectorAll("[data-page]").forEach(button => {
+  button.addEventListener("click", () => openPage(button.dataset.page));
+});
+
+document.querySelectorAll("[data-go]").forEach(button => {
+  button.addEventListener("click", () => openPage(button.dataset.go));
+});
+
+function renderProjects() {
+  const projects = getProjects();
+  document.getElementById("projectCount").textContent = projects.length;
+
+  const empty = '<div class="empty">Project မရှိသေးပါ။ AI Script တစ်ခုဖန်တီးပြီး Save လုပ်ပါ။</div>';
+
+  const rows = projects.map((p, i) => `
+    <div class="project-row">
+      <div style="min-width:0">
+        <h3>${escapeHTML(p.name)}</h3>
+        <div class="muted">${escapeHTML(p.type)} · ${escapeHTML(p.date)}</div>
+      </div>
+      <div style="display:flex;gap:7px;flex-shrink:0">
+        <button class="btn secondary" data-open-project="${i}">Open</button>
+        <button class="btn secondary" data-delete-project="${i}">Delete</button>
+      </div>
+    </div>
+  `).join("");
+
+  document.getElementById("allProjects").innerHTML = projects.length ? rows : empty;
+  document.getElementById("recentProjects").innerHTML =
+    projects.length ? projects.slice(0, 3).map(p => `
+      <div class="project-row">
+        <div>
+          <h3>${escapeHTML(p.name)}</h3>
+          <div class="muted">${escapeHTML(p.type)} · ${escapeHTML(p.date)}</div>
+        </div>
+        <span class="tag">SAVED</span>
+      </div>`).join("") :
+      '<div class="empty">သင့်ရဲ့ ပထမဆုံး Project ကို စတင်ဖန်တီးလိုက်ပါ။</div>';
+
+  document.querySelectorAll("[data-open-project]").forEach(b => {
+    b.addEventListener("click", () => {
+      const p = getProjects()[Number(b.dataset.openProject)];
+      if (!p) return;
+      currentResult = p.content;
+      currentProjectName = p.name;
+      document.getElementById("topic").value = p.name;
+      document.getElementById("scriptResult").textContent = p.content;
+      openPage("script");
+    });
+  });
+
+  document.querySelectorAll("[data-delete-project]").forEach(b => {
+    b.addEventListener("click", () => {
+      const projects = getProjects();
+      projects.splice(Number(b.dataset.deleteProject), 1);
+      localStorage.setItem("ark_creator_projects", JSON.stringify(projects));
+      renderProjects();
+    });
+  });
+}
+
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;",
+    '"': "&quot;", "'": "&#39;"
+  })[char]);
+}
+
+document.getElementById("generateBtn").addEventListener("click", async () => {
+  const topic = document.getElementById("topic").value.trim();
+  const status = document.getElementById("generateStatus");
+  const result = document.getElementById("scriptResult");
+  const btn = document.getElementById("generateBtn");
+
+  if (!topic) {
+    status.textContent = "အရင်ဆုံး Topic ကို ရေးထည့်ပါ။";
+    return;
+  }
+
+  btn.disabled = true;
+  status.textContent = "Backend ကို ချိတ်ဆက်နေပါတယ်...";
+  result.textContent = "AI အဖြေကို စောင့်နေပါတယ်...";
+
+  const payload = {
+    topic,
+    contentType: document.getElementById("contentType").value,
+    duration: document.getElementById("duration").value,
+    language: document.getElementById("language").value,
+    sceneStyle: document.getElementById("sceneStyle").value
+  };
+
+  try {
+    const response = await fetch("/api/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.error || "Backend API မအောင်မြင်ပါ။");
+    }
+
+    currentResult = data.script || data.text || data.result || "";
+    currentProjectName = topic;
+
+    if (!currentResult) throw new Error("AI အဖြေမရရှိပါ။");
+
+    result.textContent = currentResult;
+    status.textContent = "Script ရရှိပါပြီ။ Project အဖြစ် Save လုပ်နိုင်ပါတယ်။";
+  } catch (error) {
+    result.textContent = "AI Script API မချိတ်ဆက်ရသေးပါ။";
+    status.textContent = "အခုအဆင့်မှာ Dashboard UI ကိုသာ တည်ဆောက်ထားပါတယ်။ နောက်တစ်ဆင့်မှာ Cloudflare Worker နဲ့ Groq API ကို ချိတ်ဆက်ရပါမယ်။";
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+document.getElementById("saveProject").addEventListener("click", () => {
+  const topic = document.getElementById("topic").value.trim();
+  const content = currentResult || document.getElementById("scriptResult").textContent;
+
+  if (!topic || !content || content === "သင့်ရဲ့ Script ကို ဒီနေရာမှာ ပြသပါမယ်။" ||
+      content === "AI Script API မချိတ်ဆက်ရသေးပါ။") {
+    alert("Save လုပ်ဖို့ Topic နဲ့ Script အရင်လိုအပ်ပါတယ်။");
+    return;
+  }
+
+  const projects = getProjects();
+  projects.unshift({
+    name: topic,
+    type: document.getElementById("contentType").value,
+    content,
+    date: new Date().toLocaleDateString()
+  });
+
+  try {
+    localStorage.setItem("ark_creator_projects", JSON.stringify(projects));
+    currentProjectName = topic;
+    renderProjects();
+    alert("ဒီ Browser ထဲမှာ Project သိမ်းပြီးပါပြီ။");
+  } catch {
+    alert("သိမ်းဆည်းမှု မအောင်မြင်ပါ။ Browser storage နေရာလွတ်ကို စစ်ပါ။");
+  }
+});
+
+document.getElementById("copyResult").addEventListener("click", async () => {
+  const text = document.getElementById("scriptResult").textContent;
+  try {
+    await navigator.clipboard.writeText(text);
+    alert("Copy လုပ်ပြီးပါပြီ။");
+  } catch {
+    alert("Copy မရပါ။ စာသားကို ဖိထားပြီး Copy လုပ်ပါ။");
+  }
+});
+
+document.getElementById("copyImagePrompt").addEventListener("click", async () => {
+  const prompt = document.getElementById("imagePrompt").value.trim();
+  if (!prompt) {
+    alert("Image Prompt အရင်ရေးပါ။");
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(
+      prompt + "\nVisual style: " + document.getElementById("imageStyle").value
+    );
+    alert("Image Prompt ကို Copy လုပ်ပြီးပါပြီ။");
+  } catch {
+    alert("Copy မရပါ။ Prompt ကို ကိုယ်တိုင် Copy လုပ်ပါ။");
+  }
+});
+
+document.getElementById("voiceBtn").addEventListener("click", async () => {
+  const status = document.getElementById("voiceStatus");
+  try {
+    const response = await fetch("/api/health");
+    if (!response.ok) throw new Error();
+    status.textContent = "Backend ရောက်ရှိနိုင်ပါတယ်။ Voice API ကို သီးခြားချိတ်ဆက်ဖို့ လိုပါသေးတယ်။";
+  } catch {
+    status.textContent = "Backend ကို မဆက်သွယ်နိုင်ပါ။ Deployment နဲ့ Worker ကို စစ်ဆေးပါ။";
+  }
+});
+
+document.getElementById("healthBtn").addEventListener("click", async () => {
+  const status = document.getElementById("healthStatus");
+  status.textContent = "စစ်ဆေးနေပါတယ်...";
+  try {
+    const response = await fetch("/api/health");
+    const data = await response.json();
+    status.textContent = data.ok
+      ? "Backend အလုပ်လုပ်နေပါတယ်။ Groq API ကိုတော့ သီးခြားချိတ်ဆက်ဖို့ လိုပါသေးတယ်။"
+      : "Backend အခြေအနေကို ထပ်စစ်ဆေးပါ။";
+  } catch {
+    status.textContent = "Backend ကို မဆက်သွယ်နိုင်ပါ။ Deployment ကို စစ်ပါ။";
+  }
+});
+
+renderProjects();
+</script>
 </body>
 </html>
