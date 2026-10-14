@@ -3,205 +3,368 @@
 <html lang="my">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#090909">
   <title>ARK CREATOR STUDIO</title>
 
   <style>
-    * { box-sizing: border-box; }
+    :root {
+      --bg: #090909;
+      --panel: #131313;
+      --gold: #e0b95f;
+      --gold-light: #f8dfa0;
+      --text: #f5f1e8;
+      --muted: #aaa;
+      --border: #383126;
+      --green: #45d483;
+      --red: #ff6666;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
-      background: #090909;
-      color: #f5f1e8;
-      font-family: Arial, sans-serif;
       min-height: 100vh;
+      background:
+        radial-gradient(ellipse at top, #211a0d 0%, #090909 48%);
+      color: var(--text);
+      font-family: Arial, "Noto Sans Myanmar", sans-serif;
     }
 
     header {
-      padding: 24px 18px;
       text-align: center;
-      border-bottom: 1px solid #453619;
-      background: #101010;
+      padding: 28px 16px 24px;
+      background: rgba(12, 12, 12, 0.95);
+      border-bottom: 1px solid var(--border);
     }
 
-    header h1 {
-      color: #d9b35b;
-      font-size: 24px;
-      margin: 0 0 10px;
-      letter-spacing: 1px;
-    }
-
-    header p {
-      color: #aaa;
-      font-size: 13px;
+    .brand {
+      color: var(--gold);
+      font-size: clamp(23px, 5vw, 34px);
+      font-weight: 900;
+      letter-spacing: 2px;
       margin: 0;
     }
 
+    .subtitle {
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 3px;
+      margin-top: 10px;
+    }
+
     main {
-      width: min(720px, 100%);
+      width: min(760px, 100%);
       margin: auto;
-      padding: 22px 16px 40px;
+      padding: 22px 15px 45px;
     }
 
     .panel {
-      background: #121212;
-      border: 1px solid #35302a;
-      border-radius: 14px;
+      background: rgba(19, 19, 19, 0.97);
+      border: 1px solid var(--border);
+      border-radius: 15px;
       padding: 20px;
       margin-bottom: 18px;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.22);
     }
 
-    .status {
+    h2, h3 {
+      color: var(--gold);
+      margin-top: 0;
+    }
+
+    h2 {
+      font-size: 20px;
+    }
+
+    .description {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    .status-row {
       display: flex;
       align-items: center;
-      gap: 9px;
+      gap: 10px;
       font-size: 14px;
     }
 
-    .dot {
+    .status-dot {
       width: 10px;
       height: 10px;
-      border-radius: 50%;
-      background: #777;
       flex-shrink: 0;
+      background: #777;
+      border-radius: 50%;
     }
 
-    .dot.ok { background: #45d483; }
-    .dot.bad { background: #ff5656; }
+    .status-dot.online {
+      background: var(--green);
+      box-shadow: 0 0 10px rgba(69, 212, 131, 0.45);
+    }
+
+    .status-dot.offline {
+      background: var(--red);
+    }
 
     label {
       display: block;
-      color: #d9b35b;
-      margin: 16px 0 8px;
+      color: var(--gold-light);
       font-size: 14px;
+      margin: 17px 0 8px;
     }
 
     input, select, textarea {
       width: 100%;
-      padding: 12px;
-      color: #fff;
-      background: #090909;
-      border: 1px solid #494239;
-      border-radius: 8px;
-      font-size: 15px;
+      padding: 13px;
+      border: 1px solid #494238;
+      border-radius: 9px;
+      background: #0b0b0b;
+      color: var(--text);
+      font: inherit;
+      font-size: 14px;
       outline: none;
     }
 
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--gold);
+    }
+
     textarea {
-      min-height: 95px;
+      min-height: 100px;
       resize: vertical;
+      line-height: 1.7;
+    }
+
+    .mode-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .mode-card {
+      display: block;
+      position: relative;
+      padding: 15px;
+      margin: 0;
+      border: 1px solid #494238;
+      border-radius: 12px;
+      background: #0c0c0c;
+      cursor: pointer;
+    }
+
+    .mode-card:has(input:checked) {
+      border-color: var(--gold);
+      background: #211b10;
+    }
+
+    .mode-card input {
+      width: auto;
+      margin: 0 7px 0 0;
+      accent-color: var(--gold);
+    }
+
+    .mode-title {
+      color: var(--gold-light);
+      font-size: 14px;
+      font-weight: bold;
+      line-height: 1.7;
+    }
+
+    .mode-desc {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.8;
+      margin-top: 8px;
+      font-weight: normal;
     }
 
     .grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      gap: 0 12px;
     }
 
     button {
       width: 100%;
-      padding: 14px;
       border: 0;
-      border-radius: 8px;
-      margin-top: 20px;
-      background: linear-gradient(110deg, #a77b2c, #f0d48b);
-      color: #111;
-      font-size: 16px;
+      border-radius: 9px;
+      padding: 14px;
+      margin-top: 18px;
+      font-size: 15px;
       font-weight: bold;
       cursor: pointer;
+      background: linear-gradient(110deg, #a77b2c, #f8dfa0);
+      color: #111;
+      transition: opacity 0.2s;
     }
 
     button:disabled {
-      opacity: 0.5;
       cursor: wait;
-    }
-
-    #message {
-      color: #d9b35b;
-      font-size: 13px;
-      line-height: 1.7;
-      white-space: pre-wrap;
-      margin-top: 14px;
-    }
-
-    #output {
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
-      line-height: 1.8;
-      font-size: 14px;
-      color: #eee;
+      opacity: 0.55;
     }
 
     .secondary {
-      background: #242019;
-      color: #f0d48b;
-      border: 1px solid #68532b;
-      margin-top: 12px;
+      background: #211c12;
+      border: 1px solid #66522c;
+      color: var(--gold-light);
     }
 
-    @media (max-width: 420px) {
-      .grid { grid-template-columns: 1fr; }
-      .panel { padding: 15px; }
+    #message {
+      font-size: 13px;
+      line-height: 1.8;
+      margin-top: 14px;
+      color: var(--gold-light);
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    #output {
+      min-height: 100px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font-size: 14px;
+      line-height: 1.9;
+      color: #eee;
+    }
+
+    .empty {
+      color: #777;
+    }
+
+    .footer {
+      text-align: center;
+      color: #777;
+      font-size: 11px;
+      padding: 12px;
+    }
+
+    @media (max-width: 480px) {
+      .panel {
+        padding: 16px;
+      }
+
+      .mode-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 
 <body>
   <header>
-    <h1>ARK CREATOR STUDIO</h1>
-    <p>AI VIDEO SCRIPT GENERATOR</p>
+    <h1 class="brand">ARK CREATOR STUDIO</h1>
+    <div class="subtitle">AI VIDEO SCRIPT GENERATOR</div>
   </header>
 
   <main>
+    <!-- API CONNECTION -->
     <section class="panel">
-      <div class="status">
-        <span class="dot" id="statusDot"></span>
-        <span id="statusText">API ချိတ်ဆက်မှု စစ်ဆေးနေသည်...</span>
+      <h3>API Connection</h3>
+
+      <div class="status-row">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusText">Checking API connection...</span>
       </div>
+
       <button class="secondary" id="checkButton" type="button">
         Check API Connection
       </button>
     </section>
 
+    <!-- SCRIPT FORM -->
     <section class="panel">
-      <h2 style="color:#d9b35b;margin-top:0">
-        Generate Your Script
-      </h2>
+      <h2>Create Your AI Story</h2>
+
+      <p class="description">
+        ရုပ်ရှင်၊ ကာတွန်း၊ Horror၊ TikTok နဲ့ အခြား Video ဇာတ်ညွှန်းများ ဖန်တီးပါ။
+      </p>
 
       <form id="scriptForm">
-        <label for="topic">ဇာတ်လမ်းခေါင်းစဉ်</label>
+        <label for="topic">Story Topic / ဇာတ်လမ်းခေါင်းစဉ်</label>
+
         <textarea
           id="topic"
-          placeholder="ဥပမာ - မြန်မာရွာက သရဲခြောက်တဲ့အိမ်"
+          name="topic"
+          placeholder="ဥပမာ - ညသန်းခေါင်မှာ သရဲခြောက်တဲ့ မြန်မာရွာတစ်ရွာ..."
           required
         ></textarea>
+
+        <!-- TWO SCRIPT MODES -->
+        <label>Script Mode / ဇာတ်ညွှန်းပုံစံ</label>
+
+        <div class="mode-grid">
+          <label class="mode-card">
+            <div class="mode-title">
+              <input
+                type="radio"
+                name="scriptMode"
+                value="narrator"
+                checked
+              >
+              Narrator Mode
+            </div>
+
+            <div class="mode-desc">
+              ဇာတ်ကြောင်းပြောသူတစ်ယောက်က ဇာတ်လမ်းကို မြန်မာလို ပြောပြမယ်။
+              ဇာတ်ကောင်တွေက စကားမပြောဘဲ လှုပ်ရှားမှုနဲ့ အမူအရာကိုသာ ပြမယ်။
+            </div>
+          </label>
+
+          <label class="mode-card">
+            <div class="mode-title">
+              <input
+                type="radio"
+                name="scriptMode"
+                value="character"
+              >
+              Character Dialogue Mode
+            </div>
+
+            <div class="mode-desc">
+              ဇာတ်ကောင်တွေ ကိုယ်တိုင် မြန်မာလို အပြန်အလှန် စကားပြောမယ်။
+              ဘယ်ဇာတ်ကောင်က ဘာပြောတယ်ဆိုတာ သီးခြားဖော်ပြမယ်။
+            </div>
+          </label>
+        </div>
 
         <div class="grid">
           <div>
             <label for="contentType">Content Type</label>
-            <select id="contentType">
-              <option>AI Video</option>
-              <option>Horror Story</option>
-              <option>2D Cartoon</option>
-              <option>Advertisement</option>
-              <option>TikTok Story</option>
+            <select id="contentType" name="contentType">
+              <option value="AI Video">AI Video</option>
+              <option value="Horror Story">Horror Story</option>
+              <option value="2D Cartoon">2D Cartoon</option>
+              <option value="3D Animation">3D Animation</option>
+              <option value="Advertisement">Advertisement</option>
+              <option value="TikTok Story">TikTok Story</option>
+              <option value="Short Film">Short Film</option>
             </select>
           </div>
 
           <div>
-            <label for="duration">ကြာချိန်</label>
-            <select id="duration">
-              <option>30 seconds</option>
-              <option selected>60 seconds</option>
-              <option>3 minutes</option>
-              <option>5 minutes</option>
+            <label for="duration">Video Duration</label>
+            <select id="duration" name="duration">
+              <option value="30 seconds">30 Seconds</option>
+              <option value="60 seconds" selected>1 Minute</option>
+              <option value="2 minutes">2 Minutes</option>
+              <option value="3 minutes">3 Minutes</option>
+              <option value="5 minutes">5 Minutes</option>
+              <option value="10 minutes">10 Minutes</option>
             </select>
           </div>
 
           <div>
-            <label for="language">ဘာသာစကား</label>
-            <select id="language">
-              <option value="Myanmar">မြန်မာ</option>
+            <label for="language">Script Language</label>
+            <select id="language" name="language">
+              <option value="Myanmar" selected>မြန်မာဘာသာ</option>
               <option value="English">English</option>
               <option value="Japanese">Japanese</option>
             </select>
@@ -209,12 +372,13 @@
 
           <div>
             <label for="style">Visual Style</label>
-            <select id="style">
-              <option>Cinematic</option>
-              <option>Photorealistic</option>
-              <option>2D Cartoon</option>
-              <option>3D Animation</option>
-              <option>Dark Luxury</option>
+            <select id="style" name="style">
+              <option value="Cinematic">Cinematic</option>
+              <option value="Photorealistic">Photorealistic</option>
+              <option value="2D Cartoon">2D Cartoon</option>
+              <option value="3D Animation">3D Animation</option>
+              <option value="Dark Luxury">Dark Luxury</option>
+              <option value="Traditional Myanmar">Traditional Myanmar</option>
             </select>
           </div>
         </div>
@@ -223,17 +387,26 @@
           ✦ Generate AI Script
         </button>
 
-        <div id="message" role="status"></div>
+        <div id="message" role="status" aria-live="polite"></div>
       </form>
     </section>
 
+    <!-- RESULT -->
     <section class="panel">
-      <h3 style="color:#d9b35b;margin-top:0">Generated Result</h3>
-      <div id="output">သင့်ရဲ့ AI Script ကို ဒီနေရာမှာ ပြပေးပါမယ်။</div>
+      <h3>Generated Script</h3>
+
+      <div id="output" class="empty">
+        Your generated script will appear here.
+      </div>
+
       <button class="secondary" id="copyButton" type="button">
         Copy Script
       </button>
     </section>
+
+    <div class="footer">
+      ARK CREATOR STUDIO
+    </div>
   </main>
 
   <script>
@@ -244,100 +417,139 @@
     const form = document.getElementById("scriptForm");
     const generateButton = document.getElementById("generateButton");
 
+    // Check the API running on the same origin
     async function checkAPI() {
-      statusDot.className = "dot";
-      statusText.textContent = "API စစ်ဆေးနေသည်...";
+      statusDot.className = "status-dot";
+      statusText.textContent = "Checking API connection...";
 
       try {
-        const response = await fetch("/api/health");
+        const response = await fetch("/api/health", {
+          method: "GET",
+          headers: {
+            "Accept": "application/json"
+          }
+        });
+
         const data = await response.json();
 
-        if (response.ok && data.ok === true) {
-          statusDot.className = "dot ok";
-          statusText.textContent = "API Connected";
-          return true;
+        if (!response.ok || data.ok !== true) {
+          throw new Error(data.error || "Health check failed");
         }
 
-        throw new Error(data.error || "Health check failed");
+        statusDot.className = "status-dot online";
+        statusText.textContent = "Worker API Connected";
+        message.textContent = "";
+
+        return true;
       } catch (error) {
-        statusDot.className = "dot bad";
-        statusText.textContent = "API Not Connected";
+        statusDot.className = "status-dot offline";
+        statusText.textContent = "API Connection Failed";
+
         message.textContent =
-          "API ချိတ်ဆက်မှု မအောင်မြင်ပါ။ Worker URL နဲ့ Deployment ကို စစ်ပါ။";
+          "API connection မရပါ။ Website ကို Worker URL မှာဖွင့်ထားကြောင်း စစ်ပါ။";
+
         return false;
       }
     }
 
-    document.getElementById("checkButton").addEventListener(
-      "click",
-      checkAPI
-    );
+    document
+      .getElementById("checkButton")
+      .addEventListener("click", checkAPI);
 
+    // Submit script generation request to the Worker
     form.addEventListener("submit", async function(event) {
       event.preventDefault();
 
       const topic = document.getElementById("topic").value.trim();
+
+      const selectedMode = document.querySelector(
+        'input[name="scriptMode"]:checked'
+      );
 
       if (!topic) {
         message.textContent = "ဇာတ်လမ်းခေါင်းစဉ် ထည့်ပေးပါ။";
         return;
       }
 
+      const scriptMode = selectedMode
+        ? selectedMode.value
+        : "narrator";
+
+      const requestBody = {
+        topic: topic,
+        contentType: document.getElementById("contentType").value,
+        duration: document.getElementById("duration").value,
+        language: document.getElementById("language").value,
+        style: document.getElementById("style").value,
+        scriptMode: scriptMode
+      };
+
       generateButton.disabled = true;
       generateButton.textContent = "Generating...";
-      message.textContent = "Groq AI က Script ရေးပေးနေပါတယ်...";
+      message.textContent = "AI က ဇာတ်ညွှန်း ဖန်တီးနေပါတယ်...";
       output.textContent = "";
+      output.className = "";
 
       try {
         const response = await fetch("/api/generate", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Accept": "application/json"
           },
-          body: JSON.stringify({
-            topic,
-            contentType:
-              document.getElementById("contentType").value,
-            duration:
-              document.getElementById("duration").value,
-            language:
-              document.getElementById("language").value,
-            style:
-              document.getElementById("style").value
-          })
+          body: JSON.stringify(requestBody)
         });
 
         const data = await response.json();
 
-        if (!response.ok || !data.ok) {
-          throw new Error(data.error || "Script generation failed");
+        if (!response.ok || data.ok !== true) {
+          throw new Error(
+            data.error || `Request failed: ${response.status}`
+          );
+        }
+
+        if (typeof data.script !== "string" || !data.script.trim()) {
+          throw new Error("AI က ဇာတ်ညွှန်းပြန်မပေးပါ။");
         }
 
         output.textContent = data.script;
-        message.textContent = "Script အောင်မြင်စွာ ထုတ်ပြီးပါပြီ။";
+        message.textContent =
+          scriptMode === "narrator"
+            ? "Narrator Mode ဖြင့် ဇာတ်ညွှန်း ထုတ်ပြီးပါပြီ။"
+            : "Character Dialogue Mode ဖြင့် ဇာတ်ညွှန်း ထုတ်ပြီးပါပြီ။";
+
       } catch (error) {
+        output.textContent = "Script generation failed.";
+        output.className = "empty";
         message.textContent = "Error: " + error.message;
+
       } finally {
         generateButton.disabled = false;
         generateButton.textContent = "✦ Generate AI Script";
       }
     });
 
-    document.getElementById("copyButton").addEventListener(
-      "click",
-      async function() {
-        const text = output.textContent;
+    // Copy generated script
+    document
+      .getElementById("copyButton")
+      .addEventListener("click", async function() {
+        const script = output.textContent;
+
+        if (!script || output.classList.contains("empty")) {
+          message.textContent = "Copy လုပ်ရန် Script မရှိသေးပါ။";
+          return;
+        }
 
         try {
-          await navigator.clipboard.writeText(text);
+          await navigator.clipboard.writeText(script);
           message.textContent = "Script ကို Copy လုပ်ပြီးပါပြီ။";
-        } catch {
+        } catch (error) {
           message.textContent =
-            "Copy မရပါ။ Script ကို ဖိထားပြီး Copy လုပ်ပါ။";
+            "Copy မရပါ။ Script စာသားကို ဖိထားပြီး Copy လုပ်ပါ။";
         }
-      }
-    );
+      });
 
+    // Initial API check
     checkAPI();
   </script>
 </body>
