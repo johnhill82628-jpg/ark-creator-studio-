@@ -1,4 +1,3 @@
-
 name = "ark-creator-studio"
 main = "src/worker.js"
 compatibility_date = "2026-10-14"
