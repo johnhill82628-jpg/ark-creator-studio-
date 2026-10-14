@@ -1,91 +1,109 @@
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+function jsonResponse(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      ...corsHeaders,
+      "Content-Type": "application/json; charset=utf-8",
+    },
+  });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    const corsHeaders = {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-    };
-
-    const json = (data, status = 200) =>
-      new Response(JSON.stringify(data), {
-        status,
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "application/json; charset=utf-8",
-        },
-      });
-
+    // CORS preflight
     if (request.method === "OPTIONS") {
-      return new Response(null, { headers: corsHeaders });
+      return new Response(null, {
+        status: 204,
+        headers: corsHeaders,
+      });
     }
 
-    // Backend health check
+    // API health check
     if (url.pathname === "/api/health" && request.method === "GET") {
-      return json({
+      return jsonResponse({
         ok: true,
         app: "ARK CREATOR STUDIO",
         message: "Backend is running!",
       });
     }
 
-    // Generate AI script with Groq
+    // AI Script Generator
     if (url.pathname === "/api/generate" && request.method === "POST") {
-      if (!env.GROQ_API_KEY) {
-        return json({
-          error: "Groq API Key ကို Cloudflare Worker Secrets ထဲ ထည့်ဖို့လိုပါတယ်။",
-        }, 503);
-      }
-
-      let input;
-
       try {
-        input = await request.json();
-      } catch {
-        return json({ error: "Request data မှားယွင်းနေပါတယ်။" }, 400);
-      }
+        if (!env.GROQ_API_KEY) {
+          return jsonResponse({
+            ok: false,
+            error: "GROQ_API_KEY မသတ်မှတ်ရသေးပါ။ Cloudflare Secrets ထဲမှာ ထည့်ပါ။",
+          }, 500);
+        }
 
-      const topic = String(input.topic || "").trim();
+        let body;
 
-      if (!topic) {
-        return json({ error: "Topic ကို ရေးထည့်ပါ။" }, 400);
-      }
+        try {
+          body = await request.json();
+        } catch {
+          return jsonResponse({
+            ok: false,
+            error: "Request JSON မမှန်ပါ။",
+          }, 400);
+        }
 
-      if (topic.length > 2000) {
-        return json({ error: "Topic သည် စာလုံး 2000 ထက် မကျော်ရပါ။" }, 400);
-      }
+        const topic = String(body.topic || "").trim();
+        const contentType = String(body.contentType || "AI Video");
+        const duration = String(body.duration || "60 seconds");
+        const language = String(body.language || "Myanmar");
+        const style = String(body.style || "Cinematic");
 
-      const contentType = String(input.contentType || "Myanmar story").slice(0, 100);
-      const duration = String(input.duration || "60 seconds").slice(0, 50);
-      const language = String(input.language || "Burmese").slice(0, 100);
-      const sceneStyle = String(input.sceneStyle || "Detailed scene-by-scene").slice(0, 100);
+        if (!topic) {
+          return jsonResponse({
+            ok: false,
+            error: "ဇာတ်လမ်းခေါင်းစဉ် သို့မဟုတ် အကြောင်းအရာ ထည့်ပေးပါ။",
+          }, 400);
+        }
 
-      const systemPrompt = `
-You are the professional AI writing engine for ARK CREATOR STUDIO.
+        if (topic.length > 2000) {
+          return jsonResponse({
+            ok: false,
+            error: "အကြောင်းအရာ စာလုံးရေ များနေပါတယ်။ အတိုချုံးပြီး ပြန်ထည့်ပါ။",
+          }, 400);
+        }
 
-Create useful, detailed video scripts based on the user's topic.
-Respect the requested content type, duration, output language and scene style.
-If Burmese is requested, write natural Burmese.
-If English video prompts with Burmese dialogue are requested, write video prompts in English and spoken dialogue in Burmese script.
-Break longer videos into scenes with scene numbers, visual descriptions, actions, dialogue, and relevant sound effects when appropriate.
-Keep characters and visual continuity consistent between scenes.
-Do not claim that a video, image, or audio file has already been generated.
-Return the script directly without unnecessary introductions.
+        const systemPrompt = `
+You are a professional AI content creator and scriptwriter.
+Create useful, engaging, original scripts based on the user's request.
+Use the requested language.
+For video scripts, organize the result into scenes with timestamps,
+visual descriptions, dialogue or narration, and relevant sound effects.
+Do not claim that voice or image files have been generated.
+Return a clear, well-formatted script.
 `;
 
-      const userPrompt = `
+        const userPrompt = `
+Create content using these details:
+
 Topic: ${topic}
 Content type: ${contentType}
-Target duration: ${duration}
-Output language: ${language}
-Scene format: ${sceneStyle}
+Duration: ${duration}
+Language: ${language}
+Visual style: ${style}
 
-Create the complete script now.
+Requirements:
+- Make the content engaging and original.
+- Match the requested duration as closely as practical.
+- For video, separate scenes clearly.
+- Include visual prompts, dialogue or narration, and sound effects when useful.
+- If Myanmar language is requested, write naturally in Burmese.
 `;
 
-      try {
         const aiResponse = await fetch(
           "https://api.groq.com/openai/v1/chat/completions",
           {
@@ -97,8 +115,14 @@ Create the complete script now.
             body: JSON.stringify({
               model: "llama-3.3-70b-versatile",
               messages: [
-                { role: "system", content: systemPrompt },
-                { role: "user", content: userPrompt },
+                {
+                  role: "system",
+                  content: systemPrompt,
+                },
+                {
+                  role: "user",
+                  content: userPrompt,
+                },
               ],
               temperature: 0.7,
               max_tokens: 5000,
@@ -109,46 +133,49 @@ Create the complete script now.
         const result = await aiResponse.json();
 
         if (!aiResponse.ok) {
-          console.error("Groq API error:", aiResponse.status, result?.error?.message);
+          console.error("Groq API error:", result);
 
-          return json({
-            error: aiResponse.status === 429
-              ? "AI အသုံးပြုမှု ကန့်သတ်ချက် ပြည့်သွားနိုင်ပါတယ်။ ခဏစောင့်ပြီး ပြန်စမ်းပါ။"
-              : "Groq API က အဖြေမပေးနိုင်ပါ။ API Key နဲ့ Model အခြေအနေကို စစ်ပါ။",
-          }, aiResponse.status === 429 ? 429 : 502);
+          return jsonResponse({
+            ok: false,
+            error:
+              result?.error?.message ||
+              "Groq API မှ တုံ့ပြန်မှု မရပါ။ API Key နဲ့ quota ကို စစ်ဆေးပါ။",
+          }, aiResponse.status);
         }
 
-        const script = result?.choices?.[0]?.message?.content;
+        const script =
+          result?.choices?.[0]?.message?.content?.trim();
 
         if (!script) {
-          return json({ error: "AI အဖြေမရရှိပါ။ ထပ်စမ်းကြည့်ပါ။" }, 502);
+          return jsonResponse({
+            ok: false,
+            error: "AI က script မထုတ်ပေးနိုင်ခဲ့ပါ။ ထပ်စမ်းကြည့်ပါ။",
+          }, 502);
         }
 
-        return json({
+        return jsonResponse({
           ok: true,
           script,
           model: "llama-3.3-70b-versatile",
         });
-
       } catch (error) {
-        console.error("Worker request failed:", error?.message);
+        console.error("Worker error:", error);
 
-        return json({
-          error: "AI Server ကို ဆက်သွယ်မရပါ။ အင်တာနက်နဲ့ API အခြေအနေကို စစ်ပါ။",
-        }, 502);
+        return jsonResponse({
+          ok: false,
+          error: "Server error ဖြစ်နေပါတယ်။ နောက်တစ်ကြိမ် ပြန်စမ်းပါ။",
+        }, 500);
       }
     }
 
-    // Serve the website for all other routes
+    // Serve website files for all other requests
     if (env.ASSETS) {
       return env.ASSETS.fetch(request);
     }
 
-    return new Response("ARK CREATOR STUDIO API is ready.", {
-      headers: {
-        ...corsHeaders,
-        "Content-Type": "text/plain; charset=utf-8",
-      },
-    });
+    return jsonResponse({
+      ok: false,
+      error: "Website assets binding မတွေ့ပါ။ wrangler.toml ကို စစ်ပါ။",
+    }, 500);
   },
 };
